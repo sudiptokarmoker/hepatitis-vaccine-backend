@@ -1,0 +1,15 @@
+{
+    "name": "axilweb/vaccine",
+    "description": "Hepatisis B Registraiton Process",
+    "autoload": {
+        "psr-4": {
+            "Axilweb\\Vaccine\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Sudipto Karmoker"
+        }
+    ],
+    "require": {}
+}

@@ -1,0 +1,56 @@
+version: "3.7"
+volumes:
+  dbdata:
+    driver: local
+services:
+  app:
+    build:
+      args:
+        user: www
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: laravel-image
+    container_name: laravel-app-smithbespoke
+    restart: unless-stopped
+    working_dir: /var/www/
+    depends_on:
+      - mysql
+    volumes:
+      - ./:/var/www
+      - ./anavasoftc/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db-smithbespoke
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www
+      - ./anavasoftc/mysql/my.cnf:/etc/alternatives/my.cnf
+    environment:
+      MYSQL_ROOT_PASSWORD: "mlcgjnwc9a"
+      MYSQL_USER: anavasoft
+      MYSQL_PASSWORD: mlcgjnwc9a
+      MYSQL_ROOT_HOST: '%'  # needs to be enclosed with quotes
+    ports:
+      - 33064:3306
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: laravel-nginx-smithbespoke
+    restart: unless-stopped
+    ports:
+      - 8864:80
+    volumes:
+      - ./:/var/www
+      - ./anavasoftc/nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - app-network
+      
+networks:
+  app-network:
+    driver: bridge
