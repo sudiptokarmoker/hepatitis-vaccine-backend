@@ -9,3 +9,6 @@
 
 # live api url: 
 - https://vaccine-backend.deniber.com/
+
+# frontend url:
+- https://vaccine-frontend.deniber.com/
