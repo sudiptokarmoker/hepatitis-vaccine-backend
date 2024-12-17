@@ -124,4 +124,13 @@ class VaccinationCenterController extends Controller
             return self::return_response($e->getMessage(), false, [], 0, 417);
         }
     }
+    public function getAllAvailableCentersListAndScheduled()
+    {
+        try {
+            $data = $this->vaccinationCenterRepositoryObj->findAvailableCenterWithCapacityDetailsAndScheduled();
+            return self::return_response('Vaccinaiton Center Faced Successfully', true, $data, count(($data)), 200);
+        } catch (\Exception $e) {
+            return self::return_response($e->getMessage(), false, [], 0, 417);
+        }
+    }
 }

@@ -10,4 +10,5 @@ interface VaccinationCenterRepositoryInterface
     public function findAll($id);
     public function delete($id);
     public function findAvailableCenterForRegistration();
+    public function findAvailableCenterWithCapacityDetailsAndScheduled();
 }
