@@ -73,6 +73,32 @@ class VaccinationCenterRepository implements VaccinationCenterRepositoryInterfac
         }
         return $centerDataArray;
     }
+    public function findAvailableCenterWithCapacityDetailsAndScheduled()
+    {
+        /*
+         * we may need to transfer this code to listener
+         */
+        $today = Carbon::today()->format('Y-m-d');
+        $centerLoadByDateCheckObj = VaccinationCenterCapacityLimitDayWiseModel::where('date_of_vaccination', '>', $today)->get();
+        /*
+         * check all rows where capacity still now exists
+         */
+        $userVaccinationDetailsRepository = new UserVaccinationDetailsRepository();
+        $centerDataArray = [];
+        foreach ($centerLoadByDateCheckObj as $item) {
+            if($userVaccinationDetailsRepository->checkIsAllowUserOnThisCenterOnThisDate($item->center_id, $item->date_of_vaccination)){
+                $centerModel = VaccinationCenterModel::find($item->center_id);
+                $centerDataArray[] = [
+                    'center_id' => $item->center_id,
+                    'center_name' => $centerModel->center_name,
+                    'scheduled_date' => $item->date_of_vaccination,
+                    'center_capacity_root_id' => $item->id,
+                    'capacity_limit' => $item->capacity_limit
+                ];
+            }
+        }
+        return $centerDataArray;
+    }
     public function delete($id)
     {
         $vaccinationCenter = VaccinationCenterModel::findOrFail($id);
