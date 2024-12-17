@@ -47,12 +47,19 @@ class VaccinationCenterController extends Controller
             return self::return_response('Not permitted', false, [], 0, 403);
         }
         try {
+            $dateOfVaccination = \Carbon\Carbon::parse($request->date_of_vaccination)->format('Y-m-d');
+
             $request->validate(
                 [
                     'center_name' => 'required|max:255|unique:vaccination_center',
-                    'status' => 'boolean'
+                    'status' => 'boolean',
+                    // adding here two extra field (date and capacity
+                    //'date_of_vaccination' => 'required|date|after_or_equal:today',
+                    'capacity_limit' => 'required|integer'
                 ]
             );
+            $request->merge(['date_of_vaccination' => $dateOfVaccination]);
+
             $data = $this->vaccinationCenterRepositoryObj->create($request->all());
             return self::return_response('Vaccinaiton Created Successfully', true, $data, 0, 200);
         } catch (\Exception $e) {
