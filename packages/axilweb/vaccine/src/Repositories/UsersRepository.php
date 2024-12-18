@@ -7,6 +7,7 @@ use App\Models\User;
 use Axilweb\Vaccine\Interfaces\UsersRepositoryInterface;
 use Axilweb\Vaccine\Models\UserVaccinationDetailsModel;
 use Axilweb\Vaccine\Models\VaccinationCenterCapacityLimitDayWiseModel;
+use Axilweb\Vaccine\Models\VaccinationCenterModel;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -122,9 +123,19 @@ class UsersRepository implements UsersRepositoryInterface
         foreach ($centerLoadByDateCheckObj as $item) {
             $date2 = Carbon::parse($item->date_of_vaccination);
             if($userVaccinationDetailsRepository->checkIsAllowUserOnThisCenterOnThisDate($item->center_id, $item->date_of_vaccination) && $date1->equalTo($date2)){
+                /**
+                 * getting main center id from capacity id
+                 */
+                $centerObj = VaccinationCenterCapacityLimitDayWiseModel::find($item->center_id);
+                /**
+                 * end of getting center id
+                 */
                 $userVaccinationModel->user_id = $user->id;
                 $userVaccinationModel->vaccine_scheduled_date = $item->date_of_vaccination;
-                $userVaccinationModel->center_id  = $item->center_id;
+                
+                //$userVaccinationModel->center_id  = $item->center_id;
+                $userVaccinationModel->center_id  = $centerObj->center_id;
+
                 $userVaccinationModel->status = ScheduleStatus::Scheduled;
                 $userVaccinationModel->save();
 
