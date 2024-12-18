@@ -5,6 +5,7 @@ namespace Axilweb\Vaccine\Http\Controllers\Api;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Axilweb\Vaccine\Events\VaccineEmailNotificationToEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Axilweb\Vaccine\Interfaces\UsersRepositoryInterface;
@@ -24,8 +25,6 @@ class AuthController extends Controller
     public function createUser(Request $request)
     {
         try {
-            //dd($request);
-
             $validateUser = Validator::make($request->all(),
                 [
                     'first_name' => 'required',
@@ -39,6 +38,18 @@ class AuthController extends Controller
 
             $user = $this->userObj->create($request->all());
             $selectedDate = $this->userObj->returnDateByCapacityId($request->center_capacity_root_id);
+
+            /**
+             * send email to customer
+             */
+            $emailData = [
+                'email' => 'sudiptocsi@gmail.com',
+                'subject' => 'Test Email',
+                'message' => 'This is a test email sent via events and listeners.',
+            ];    
+
+             // Dispatch the event
+            VaccineEmailNotificationToEvent::dispatch($emailData);
 
             return $user ? self::return_response('User Created Successfully',  true,
                 [
@@ -83,23 +94,6 @@ class AuthController extends Controller
             return self::return_response($th->getMessage(),  false,[], 0, 500);
         }
     }
-    public function sendOtp(Request $request){
-        $this->validate($request, [
-            'email' => 'required',
-        ]);
-        $returnData = $this->userObj->sendUserOtp($request->all());
-        if(isset($returnData['checkUserEmailExists']->id)) {
-            if($returnData['updateData'])
-            {
-                return self::return_response('OTP sent successfully.',  true,['user_id'=>$returnData['userData']->id,'otp'=>$returnData['userData']->otp], 0, 200);
-            }else{
-                return self::return_response('Could not send otp.',  false,[], 0, 417);
-            }
-        }
-        else{
-            return self::return_response('Invalid Email.',  false,[], 0, 417);
-        }
-    }
     public function resetPassword(Request $request)
     {
         try {
@@ -120,16 +114,6 @@ class AuthController extends Controller
             }
         } catch (\Throwable $th) {
             return self::return_response($th->getMessage(),  false,[], 0, 500);
-        }
-    }
-
-    public function userProfile($id)
-    {
-        $userData = $this->userObj->userInfo($id);
-        if($userData) {
-            return self::return_response('User info fetched successfully.',  true,['user_data'=>$userData], 0, 200);
-        }else {
-            return self::return_response('Invalid User.',  false,[], 0, 417);
         }
     }
     /**
