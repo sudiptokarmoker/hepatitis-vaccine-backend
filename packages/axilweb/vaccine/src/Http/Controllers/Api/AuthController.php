@@ -78,6 +78,62 @@ class AuthController extends Controller
             return self::return_response($e->getMessage(),  false, [], 0, 422);
         }
     }
+
+    public function registerVaccineUserFromAdmin(Request $request)
+    {
+        try {
+            $validateUser = Validator::make(
+                $request->all(),
+                [
+                    'first_name' => 'required',
+                    'email' => 'required|email|unique:users,email',
+                    //'password' => 'required',
+                    'nid' => 'required|unique:users,nid'
+                ]
+            );
+            if ($validateUser->fails()) {
+                return self::return_response($validateUser->errors(),  false, [], 0, 401);
+            }
+
+            $user = $this->userObj->create($request->all());
+            $selectedDate = $this->userObj->returnDateByCapacityId($request->center_capacity_root_id);
+
+            if ($selectedDate) {
+                /**
+                 * send email to user
+                 */
+                $mailData = [
+                    //'email' => $user->email,
+                    'title' => 'Vacination Scheduled',
+                    'body' => 'Scheulded successfully. Your vaccination date is : '.$selectedDate
+                ];
+                // Dispatch the event
+                VaccineEmailNotificationToEvent::dispatch($user->email, $mailData);
+            }
+
+            return $user ? self::return_response(
+                'Vaccine User Created Successfully',
+                true,
+                [
+                    'scheduled_status' => $this->userObj->assignScheduleToUser($user, $selectedDate, $request->center_capacity_root_id)
+                ],
+                1,
+                200
+            ) :
+                self::return_response(
+                    'Vaccine User Not Created',
+                    false,
+                    [
+                        'scheduled_status' => false
+                    ],
+                    0,
+                    200
+                );
+        } catch (\Exception $e) {
+            return self::return_response($e->getMessage(),  false, [], 0, 422);
+        }
+    }
+
     /**
      * Login The User
      * @param Request $request

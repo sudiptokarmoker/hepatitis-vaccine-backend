@@ -47,5 +47,7 @@ Route::prefix('api/vaccine')->group(function () {
         //Route::post('/logout', [AuthController::class, 'logoutUser']);
         Route::resource('vaccination-center', \Axilweb\Vaccine\Http\Controllers\Api\VaccinationCenterController::class);
         Route::resource('day-capacity-limit-day-wise', \Axilweb\Vaccine\Http\Controllers\Api\VaccinationCenterCapacityLimitDayWiseController::class);
+
+        Route::post('/auth/register-vaccine-user', [AuthController::class, 'registerVaccineUserFromAdmin']);
     });
 });
