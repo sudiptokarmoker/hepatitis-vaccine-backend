@@ -9,8 +9,6 @@ use Axilweb\Vaccine\Events\VaccineEmailNotificationToEvent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Axilweb\Vaccine\Interfaces\UsersRepositoryInterface;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -45,7 +43,7 @@ class AuthController extends Controller
 
             if ($selectedDate) {
                 /**
-                 * send email to customer
+                 * send email to user
                  */
                 $mailData = [
                     //'email' => $user->email,
