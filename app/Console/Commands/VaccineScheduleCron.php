@@ -54,8 +54,7 @@ class VaccineScheduleCron extends Command
                     $oneDayBefore = $scheduledDate->copy()->subDay();
 
                     if (Carbon::now()->isSameDay($oneDayBefore)) {
-                        // Your logic when today is one day before the scheduled date
-                        //echo "Reminder: One day left for vaccination for user {$item->first_name} {$item->last_name}.";
+                        //  when today is one day before the scheduled date
                         /**
                          * send email to user
                          */
