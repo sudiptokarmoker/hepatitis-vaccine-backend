@@ -14,6 +14,6 @@ interface UsersRepositoryInterface
     public function login(array $data);
     public function changePassword(array $data);
     public function lists(Request $request);
-    public function assignScheduleToUser($user, $date);
+    public function assignScheduleToUser($user, $date, $center_capacity_root_id);
     public function returnDateByCapacityId($id);
 }

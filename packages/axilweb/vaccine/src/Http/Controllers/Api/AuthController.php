@@ -54,7 +54,7 @@ class AuthController extends Controller
             return $user ? self::return_response('User Created Successfully',  true,
                 [
                     'token' => $user->createToken("API TOKEN")->plainTextToken,
-                    'scheduled_status' => $this->userObj->assignScheduleToUser($user, $selectedDate)
+                    'scheduled_status' => $this->userObj->assignScheduleToUser($user, $selectedDate, $request->center_capacity_root_id)
                 ], 1, 200) :
                 self::return_response('User not created',  false,
                     [

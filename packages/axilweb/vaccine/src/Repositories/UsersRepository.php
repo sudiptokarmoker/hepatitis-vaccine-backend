@@ -15,7 +15,8 @@ use Illuminate\Support\Str;
 
 class UsersRepository implements UsersRepositoryInterface
 {
-    public function create(array $data){
+    public function create(array $data)
+    {
         $user = new User();
         $user->first_name = $data['first_name'];
         $user->last_name = $data['last_name'];
@@ -28,34 +29,27 @@ class UsersRepository implements UsersRepositoryInterface
 
         return $user;
     }
-    public function update(array $data){
-
-    }
-    public function find($id){
-
-    }
-    public function findAll($id){
-
-    }
-    public function delete($id)
+    public function update(array $data) {}
+    public function find($id) {}
+    public function findAll($id) {}
+    public function delete($id) {}
+    public function login(array $data)
     {
-
-    }
-    public function login(array $data){
         //$user = User::where('email', $data['email'])->first();
         $user = User::where('email', $data['email'])
-                ->where('isAdmin', true)
-                ->first();
+            ->where('isAdmin', true)
+            ->first();
         return $user;
     }
-    public function sendUserOtp(array $data){
-        $otpData=[];
-        $otpData['checkUserEmailExists']= $checkUserEmailExists = User::where('email',$data['email'])->first();
-        if(isset($checkUserEmailExists->id)) {
+    public function sendUserOtp(array $data)
+    {
+        $otpData = [];
+        $otpData['checkUserEmailExists'] = $checkUserEmailExists = User::where('email', $data['email'])->first();
+        if (isset($checkUserEmailExists->id)) {
             // otp set & email send
             $uniqueNumber = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $otpData['updateData']= $updateData = User::where('id',$checkUserEmailExists->id)->update(['otp'=>$uniqueNumber]);
-            $otpData['userData']= $userData = User::find($checkUserEmailExists->id);
+            $otpData['updateData'] = $updateData = User::where('id', $checkUserEmailExists->id)->update(['otp' => $uniqueNumber]);
+            $otpData['userData'] = $userData = User::find($checkUserEmailExists->id);
             //email send start
             if (isset($uniqueNumber) && isset($userData->name)) {
                 $details = [
@@ -73,11 +67,12 @@ class UsersRepository implements UsersRepositoryInterface
         $password = Hash::make($data['new_password']);
         User::updateUserPassword($userId, $password);
     }
-    public function userInfo($id){
-        $userData = User::leftjoin('user_personal_details','user_personal_details.user_id','users.id')
-            ->leftjoin('user_contact_details','user_contact_details.user_id','users.id')
-            ->leftjoin('user_media','user_media.user_id','users.id')
-            ->where('users.id',$id)
+    public function userInfo($id)
+    {
+        $userData = User::leftjoin('user_personal_details', 'user_personal_details.user_id', 'users.id')
+            ->leftjoin('user_contact_details', 'user_contact_details.user_id', 'users.id')
+            ->leftjoin('user_media', 'user_media.user_id', 'users.id')
+            ->where('users.id', $id)
             ->first();
         return $userData;
     }
@@ -107,7 +102,25 @@ class UsersRepository implements UsersRepositoryInterface
     /**
      * assign scheduled to user
      */
-    public function assignScheduleToUser($user, $date)
+
+    public function assignScheduleToUser($user, $date, $center_capacity_root_id)
+    {
+        $centerLoadByDateCheckObj = VaccinationCenterCapacityLimitDayWiseModel::find($center_capacity_root_id);
+
+        $userVaccinationModel = new UserVaccinationDetailsModel();
+        $userVaccinationModel->user_id = $user->id;
+        $userVaccinationModel->vaccine_scheduled_date = $date;
+        $userVaccinationModel->center_id  = $centerLoadByDateCheckObj->center_id;
+        $userVaccinationModel->status = ScheduleStatus::Scheduled;
+        $userVaccinationModel->save();
+
+        return ScheduleStatus::Scheduled;
+    }
+
+
+
+
+    public function assignScheduleToUser_bk_18_12($user, $date)
     {
         $today = Carbon::today()->format('Y-m-d');
         $centerLoadByDateCheckObj = VaccinationCenterCapacityLimitDayWiseModel::where('date_of_vaccination', '>', $today)->get();
@@ -122,19 +135,21 @@ class UsersRepository implements UsersRepositoryInterface
 
         foreach ($centerLoadByDateCheckObj as $item) {
             $date2 = Carbon::parse($item->date_of_vaccination);
-            if($userVaccinationDetailsRepository->checkIsAllowUserOnThisCenterOnThisDate($item->center_id, $item->date_of_vaccination) && $date1->equalTo($date2)){
+            if ($userVaccinationDetailsRepository->checkIsAllowUserOnThisCenterOnThisDate($item->center_id, $item->date_of_vaccination) && $date1->equalTo($date2)) {
                 /**
                  * getting main center id from capacity id
                  */
-                $centerObj = VaccinationCenterCapacityLimitDayWiseModel::find($item->center_id);
+                //dd($item);
+                //$centerObj = VaccinationCenterCapacityLimitDayWiseModel::find($item->center_id);
+                //dd($centerObj);
                 /**
                  * end of getting center id
                  */
                 $userVaccinationModel->user_id = $user->id;
                 $userVaccinationModel->vaccine_scheduled_date = $item->date_of_vaccination;
-                
-                //$userVaccinationModel->center_id  = $item->center_id;
-                $userVaccinationModel->center_id  = $centerObj->center_id;
+
+                $userVaccinationModel->center_id  = $item->center_id;
+                //$userVaccinationModel->center_id  = $centerObj->center_id;
 
                 $userVaccinationModel->status = ScheduleStatus::Scheduled;
                 $userVaccinationModel->save();
@@ -146,7 +161,7 @@ class UsersRepository implements UsersRepositoryInterface
         /**
          * set not scheduled
          */
-        if(!$scheduledTrigger){
+        if (!$scheduledTrigger) {
             $userVaccinationModel->user_id = $user->id;
             $userVaccinationModel->status = ScheduleStatus::NotScheduled;
             $userVaccinationModel->save();
@@ -166,7 +181,7 @@ class UsersRepository implements UsersRepositoryInterface
         $userVaccinationModel = new UserVaccinationDetailsModel();
         $scheduledTrigger = false;
         foreach ($centerLoadByDateCheckObj as $item) {
-            if($userVaccinationDetailsRepository->checkIsAllowUserOnThisCenterOnThisDate($item->center_id, $item->date_of_vaccination)){
+            if ($userVaccinationDetailsRepository->checkIsAllowUserOnThisCenterOnThisDate($item->center_id, $item->date_of_vaccination)) {
                 $userVaccinationModel->user_id = $user->id;
                 $userVaccinationModel->vaccine_scheduled_date = $item->date_of_vaccination;
                 $userVaccinationModel->center_id  = $item->center_id;
@@ -180,7 +195,7 @@ class UsersRepository implements UsersRepositoryInterface
         /**
          * set not scheduled
          */
-        if(!$scheduledTrigger){
+        if (!$scheduledTrigger) {
             $userVaccinationModel->user_id = $user->id;
             $userVaccinationModel->status = ScheduleStatus::NotScheduled;
             $userVaccinationModel->save();
@@ -193,11 +208,10 @@ class UsersRepository implements UsersRepositoryInterface
     public function returnDateByCapacityId($id)
     {
         $obj = VaccinationCenterCapacityLimitDayWiseModel::find($id);
-        if($obj){
+        if ($obj) {
             return $obj->date_of_vaccination;
         } else {
             return null;
         }
     }
-
 }
