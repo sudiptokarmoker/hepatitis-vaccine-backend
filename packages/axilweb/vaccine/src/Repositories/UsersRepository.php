@@ -105,16 +105,27 @@ class UsersRepository implements UsersRepositoryInterface
 
     public function assignScheduleToUser($user, $date, $center_capacity_root_id)
     {
-        $centerLoadByDateCheckObj = VaccinationCenterCapacityLimitDayWiseModel::find($center_capacity_root_id);
-
+        /**
+         * just defaut check if not assigned any date then we woudl trigger some null value here
+         */
         $userVaccinationModel = new UserVaccinationDetailsModel();
-        $userVaccinationModel->user_id = $user->id;
-        $userVaccinationModel->vaccine_scheduled_date = $date;
-        $userVaccinationModel->center_id  = $centerLoadByDateCheckObj->center_id;
-        $userVaccinationModel->status = ScheduleStatus::Scheduled;
-        $userVaccinationModel->save();
 
-        return ScheduleStatus::Scheduled;
+        if($date == null){
+            $userVaccinationModel->user_id = $user->id;
+            $userVaccinationModel->status = ScheduleStatus::NotScheduled;
+            $userVaccinationModel->save();
+            return ScheduleStatus::NotScheduled;
+        } else {
+            $centerLoadByDateCheckObj = VaccinationCenterCapacityLimitDayWiseModel::find($center_capacity_root_id);
+            
+            $userVaccinationModel->user_id = $user->id;
+            $userVaccinationModel->vaccine_scheduled_date = $date;
+            $userVaccinationModel->center_id  = $centerLoadByDateCheckObj->center_id;
+            $userVaccinationModel->status = ScheduleStatus::Scheduled;
+            $userVaccinationModel->save();
+    
+            return ScheduleStatus::Scheduled;
+        }
     }
 
 
