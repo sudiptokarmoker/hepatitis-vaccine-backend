@@ -4,6 +4,7 @@ namespace Axilweb\Vaccine;
 
 use Axilweb\Vaccine\Events\VaccineEmailNotificationToEvent;
 use Axilweb\Vaccine\Listeners\EmailNotificationListener;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class VaccineServiceProvider extends ServiceProvider
@@ -13,6 +14,7 @@ class VaccineServiceProvider extends ServiceProvider
             EmailNotificationListener::class
         ]
     ];
+
     public function boot()
     {
         $this->loadRoutesFrom(__DIR__.'/routes/api.php');
@@ -20,6 +22,11 @@ class VaccineServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/vaccine.php' => config_path('vaccine.php'),
         ], 'vaccine-config');
+
+        Event::listen(
+            VaccineEmailNotificationToEvent::class,
+            [EmailNotificationListener::class, 'handle']
+        );
     }
     /**
      * Register any application services.

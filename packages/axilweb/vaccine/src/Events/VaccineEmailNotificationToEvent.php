@@ -14,12 +14,16 @@ class VaccineEmailNotificationToEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $email;
+    public $data;
+
     /**
      * Create a new event instance.
      */
-    public function __construct()
+    public function __construct($email, $data)
     {
-        //
+        $this->email = $email;
+        $this->data = $data;
     }
 
     /**

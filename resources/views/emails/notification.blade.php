@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ $subject }}</title>
+    <title>ItsolutionStuff.com</title>
 </head>
 <body>
-    <p>{{ $message }}</p>
+    <h1>{{ $mailData['title'] }}</h1>
+    <p>{{ $mailData['body'] }}</p>
+    
+    <p>Thank you</p>
 </body>
 </html>
